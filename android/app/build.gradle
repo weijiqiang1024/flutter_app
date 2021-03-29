@@ -1,0 +1,126 @@
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException('Flutter SDK not found. Define location with flutter.sdk in the local.properties file.')
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+android {
+    compileSdkVersion 29
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        main.jniLibs.srcDirs = ['libs']
+    }
+
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId 'com.example.police_mobile_sytem'
+        // minSdkVersion 23
+        // minSdkVersion 23
+        // targetSdkVersion 25
+        minSdkVersion 23
+        targetSdkVersion 29
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+    }
+
+    signingConfigs {
+        //发布版的keystore
+        debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('../debug.keystore')
+            storePassword 'android'
+        }
+        release {
+            keyAlias 'app.keystore'
+            keyPassword '123456'
+            storeFile file('../app.keystore')
+            storePassword '123456'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            zipAlignEnabled true
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            //2,如果开启混淆,记得增加海康sdk的过滤
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            //3,so库过滤
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
+        // release {
+        //     // TODO: Add your own signing config for the release build.
+        //     // Signing with the debug keys for now, so `flutter run --release` works.
+        //     signingConfig signingConfigs.debug
+        //     // signingConfig signingConfigs.release
+        // }
+    }
+
+    // buildTypes {
+    //      release {
+    //         // TODO: Add your own signing config for the release build.
+    //         // Signing with the debug keys for now, so `flutter run --release` works.
+
+    //         // signingConfig signingConfigs.debug
+    //         signingConfig signingConfigs.release
+    //         //more than 64K
+    //         minifyEnabled true
+    //         shrinkResources true
+    //         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    //     }
+    //     profile {
+    //         signingConfig signingConfigs.release
+    //     }
+    //     debug {
+    //         signingConfig signingConfigs.release
+    //         minifyEnabled true
+    //         shrinkResources true
+    //         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    //     }
+    // }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
